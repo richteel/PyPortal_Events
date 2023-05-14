@@ -1,0 +1,450 @@
+:root {
+    --bookmark_area_bgcolor: #F5F5DC;
+    --bookmark_area_color: black;
+    --bookmark_selected_bgcolor: rgba(119, 132, 114, 0.2);
+    /* #778472; */
+    --bookmark_selected_color: white;
+}
+
+/***** Main Page Layout *****/
+body {
+    font-family: -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        "Helvetica Neue",
+        Arial,
+        "Noto Sans",
+        "Liberation Sans",
+        sans-serif,
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Noto Color Emoji";
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 24px;
+}
+
+button {
+    background-color: lightgray;
+    border: 1px solid rgb(107, 107, 107);
+    border-radius: 10px;
+    font-weight: bolder;
+    min-width: 40px;
+    padding: 6px 5px;
+}
+
+button:disabled {
+    opacity: 0.4;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+}
+
+label::after {
+    content: ":\00a0\00a0";
+}
+
+.bookmark_button {
+    align-items: center;
+    margin-right: 10px;
+}
+
+.bookmark_inner {
+    display: inline-block;
+    min-height: 41px;
+    padding-left: 10px;
+    padding-right: 10px;
+    vertical-align: middle;
+    width: calc(100% - 70px);
+}
+
+.bookmark_inner:hover {
+    background-color: var(--bookmark_selected_bgcolor);
+}
+
+.bookmark_note {
+    display: inline-block;
+    font-style: italic;
+    padding-bottom: 5px;
+    padding-left: 1.5em;
+    /* text-indent: 1em; */
+    white-space: pre-wrap;
+}
+
+.bookmark_outer {
+    align-items: center;
+    /* vertical-align: middle; */
+}
+
+.bookmarks li {
+    margin-left: 20px;
+}
+
+.bookmarks ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    padding-inline-start: 0;
+}
+
+.container.outer {
+    border: 1px solid rgb(156, 156, 156);
+    border-radius: 10px 10px 0 0;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 80%;
+}
+
+.datacell {
+    padding-left: 2em;
+    display: table-cell;
+}
+
+.datacellcheck {
+    padding-left: 0 !important;
+}
+
+.dataHeader {
+    background-color: blue;
+    border-top: solid red 2px;
+    color: white;
+    font-weight: bold;
+    margin-top: 6px;
+    overflow: scroll;
+}
+
+.datarow {
+    display: table-row;
+    overflow: scroll;
+    white-space: nowrap;
+
+    cursor: move;
+    z-index: 10;
+}
+
+.datarowhover {
+    background-color: yellow;
+    color: black;
+}
+
+.datrowSelected {
+    background-color: purple;
+    color: white;
+    ;
+}
+
+.dialog_title {
+    /* background-color: rgb(26, 115, 232, 33); */
+    background-image: linear-gradient(135deg, #B4C5E4, rgb(26, 115, 232, 33));
+    color: white;
+    font-size: larger;
+    padding: 6px;
+    text-align: center;
+}
+
+.flex_full_width {
+    flex: 0 0 100%;
+}
+
+.flex_row {
+    display: flex;
+}
+
+.forecolorSampleDefault {
+    background-color: #F0C810;
+    border: solid black 1px;
+    display: inline-block;
+    height: 14px;
+    width: 14px;
+
+    position: relative;
+    transform: translateY(33%);
+}
+
+.forecolorSample {
+    background-color: #F0C810;
+    border: solid black 1px;
+    display: inline-block;
+    height: 14px;
+    width: 14px;
+
+    position: relative;
+    transform: translateY(33%);
+}
+
+.help {
+    font-style: italic;
+    font-size: small;
+}
+
+.pad20 {
+    padding: 20px;
+}
+
+.pad20 label {
+    min-width: 6em;
+    display: inline-block;
+    text-align: right;
+}
+
+.scrollV {
+    background-color: var(--bookmark_area_bgcolor);
+    color: var(--bookmark_area_color);
+    display: flex;
+    flex-direction: column;
+    height: 65vh !important;
+    overflow-y: scroll;
+    padding-bottom: 25px;
+    padding-top: 25px;
+    width: 100%;
+}
+
+.tabs_row {
+    background-image: linear-gradient(90deg, #B4C5E4, #778472);
+    border-radius: 10px 10px 0 0;
+    display: -webkit-box;
+}
+
+.tabs_row .left_div {
+    float: left;
+    padding: 6px;
+}
+
+.tabs_row .middle_div {
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.tabs_row .middle_div ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tabs_row .middle_div li {
+    background-color: #002f51;
+    border: 1px solid #9b9b9b;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    color: #eeeeee;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 6px;
+    padding: 5px 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.tabs_row .middle_div li.selected {
+    background-color: var(--bookmark_area_bgcolor);
+    color: var(--bookmark_area_color);
+    border-bottom: 1px solid var(--bookmark_area_bgcolor);
+}
+
+.tabs_row .middle_div li a {
+    padding: 0 10px;
+}
+
+.tabs_row .right_div {
+    float: right;
+    padding: 6px;
+}
+
+.text-center {
+    align-items: center;
+    text-align: center;
+}
+
+/***** Context Menus *****/
+.context_menu {
+    background-color: whitesmoke;
+    border: none;
+    border-radius: 4px;
+    box-shadow: rgb(158, 158, 158) 0 2px 6px 0;
+    font-size: 81.25%;
+    position: absolute;
+    z-index: 99;
+}
+
+.context_menu button {
+    align-items: center;
+    background: 0 0;
+    border: none;
+    display: flex;
+    font-weight: initial;
+    min-height: 32px;
+    padding: 0 24px;
+    width: 100%;
+}
+
+.context_menu hr {
+    margin: 8px 0;
+}
+
+.context_menu .menu_wrapper {
+    padding: 8px 0;
+}
+
+.context_menu button:disabled {
+    opacity: 40;
+    pointer-events: none;
+}
+
+/***** Dialogs *****/
+.dialog_box {
+    /* css3 drop shadow */
+    -moz-border-radius: 5px;
+    -moz-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    -webkit-border-radius: 5px;
+    -webkit-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    background: white;
+    display: none;
+    position: absolute;
+    width: 500px;
+    z-index: 5000;
+}
+
+.dialog_box .dialog_content {
+    color: #666;
+    font-family: arial;
+    font-size: 16px;
+    margin: 13px;
+    padding: 10px;
+    text-align: left;
+}
+
+.dialog_box .dialog_content button {
+    border: 1px solid black;
+    border-radius: 5px;
+    float: right;
+    margin: 10px;
+    width: 80px;
+}
+
+.dialog_box .dialog_content button.button_save {
+    background-color: rgb(26, 115, 232);
+    color: white;
+}
+
+.dialog_box .dialog_content button.button_cancel {
+    background-color: white;
+    color: rgb(26, 115, 232);
+}
+
+.dialog_box .dialog_content label {
+    font-size: x-small;
+}
+
+.dialog_box .dialog_content input[type="text"] {
+    background-color: rgb(241, 243, 244);
+    border: none;
+    border-radius: 5px 5px 0 0;
+    width: 100%;
+}
+
+.dialog_box .dialog_content input[type="text"]:focus {
+    border-bottom: blue solid 1px;
+    outline: none;
+    width: 100%;
+}
+
+.dialog_box .dialog_content textarea {
+    background-color: rgb(241, 243, 244);
+    border: none;
+    border-radius: 5px 5px 0 0;
+    width: 100%;
+}
+
+.dialog_box .dialog_content textarea:focus {
+    border-bottom: blue solid 1px;
+    outline: none;
+}
+
+/* extra styling */
+.dialog_box .dialog_content p {
+    font-weight: 700;
+    margin: 0;
+}
+
+.dialog_box .dialog_content ul {
+    height: 50px;
+    margin: 10px 0 10px 20px;
+    padding: 0;
+}
+
+.dialog_box .dialog_message {
+    display: none;
+}
+
+#dialog_overlay {
+    -khtml-opacity: 0.5;
+    -moz-opacity: 0.5;
+    background: #000;
+    display: none;
+    filter: alpha(opacity=50);
+    height: 100%;
+    left: 0;
+    opacity: 0.5;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 3000;
+}
+
+#events_actions, #secrets_actions {
+    border-top: solid silver 2px;
+    margin-top: 10px;
+    ;
+    padding-top: 10px;
+}
+
+#events_tools {
+    border-bottom: solid silver 2px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
+#noevents {
+    padding-bottom: 0.5em;
+    padding-top: 0.5em;
+}
+
+/***** Messages *****/
+.message {
+    background-color: silver;
+    border-radius: 10px;
+    display: none;
+    margin: auto;
+    padding: 10px;
+    text-align: center;
+    white-space: pre-line;
+}
+
+.message.error {
+    border: 1px red solid;
+    color: red;
+}
+
+.message.warning {
+    border: 1px yellow solid;
+    color: yellow;
+}
+
+.message.success {
+    border: 1px green solid;
+    color: green;
+}
+
+.message.information {
+    border: 1px blue solid;
+    color: blue;
+}
