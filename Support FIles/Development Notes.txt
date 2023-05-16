@@ -1,0 +1,41 @@
+----- Backlight -----
+https://learn.adafruit.com/making-a-pyportal-user-interface-displayio/display
+
+        # Get lightsensor reading
+        lightVal = light_sensor.value
+        # Value range is 0 to 65,536 but in normal setting, it does not go outside of 1000 to 2000
+        if lightVal < startAutoDimAt:
+            val = ((lightVal-endAutoDimAt)/(startAutoDimAt-endAutoDimAt))+minAutoBrightness
+        if val < minAutoBrightness:
+            val = minAutoBrightness
+
+https://www.analog.com/en/design-notes/a-simple-implementation-of-lcd-brightness-control-using-the-max44009-ambientlight-sensor.html
+
+Datasheet: https://cdn-shop.adafruit.com/product-files/2748/2748%20datasheet.pdf
+
+----- Signal Strength and Connection Status -----
+
+Some information but not detailed enough, needed to go to the code
+https://docs.circuitpython.org/projects/pyportal/en/latest/api.html#adafruit_pyportal.network.Network
+
+Determining network functionality
+https://github.com/adafruit/Adafruit_CircuitPython_PyPortal/blob/main/adafruit_pyportal/network.py
+
+Lead to esp32
+https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI/blob/main/adafruit_esp32spi/adafruit_esp32spi_wifimanager.py
+
+Found some code on Network Quality
+https://github.com/tttapa/Projects/blob/master/ESP8266/WiFi/RSSI-WiFi-Quality/RSSI-WiFi-Quality.ino
+
+
+RSSI and dBM information for WiFi
+https://www.metageek.com/training/resources/understanding-rssi/
+
+> -30 dBM Amazing
+-55 to -30 dBm Very Good
+-67 to -55 dBm Fairly Good
+-70 to -67 dBm Okay
+-80 to -70 dBm Not Good
+< -80 not usable
+
+SOURCE: https://deepbluembedded.com/esp32-wifi-signal-strength-arduino-rssi/#:~:text=ESP32%20RSSI%20WiFi%20(Signal%20Strength,router%20or%20any%20access%20point).
