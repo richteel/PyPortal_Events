@@ -310,8 +310,6 @@ while True:
         time.sleep(3)
         continue
 
-    now = time.localtime()
-
     # Show the events with countdown
     if event_index != last_event_index:
         if len(events) == 0:
@@ -326,7 +324,29 @@ while True:
             eventWindow.title.text = events[event_index].title
             eventWindow.subtitle.color = events[event_index].forecolor
             eventWindow.subtitle.text = events[event_index].subtitle
+            events[event_index].remainingUpdate()
+
+            if events[event_index].remainingTime > 0:
+                eventWindow.countlabelDays.text = "Days"
+                eventWindow.countlabelHours.text = "Hours"
+                eventWindow.countlabelMinutes.text = "Mins."
+
             last_event_index = event_index
 
     if len(events) == 0:
         continue
+
+    # Update the remaining time
+    events[event_index].remainingUpdate()
+    if events[event_index].remainingTime <= 0:
+        eventWindow.countlabelDays.text = ""
+        eventWindow.countlabelHours.text = ""
+        eventWindow.countlabelMinutes.text = ""
+        eventWindow.countDays.text = "Event Day!!!"
+        eventWindow.countHours.text = ""
+        eventWindow.countMinutes.text = ""
+        continue
+
+    eventWindow.countDays.text = f"{events[event_index].remainingDays}"
+    eventWindow.countHours.text = f"{events[event_index].remainingHours}"
+    eventWindow.countMinutes.text = f"{events[event_index].remainingMinutes}"
