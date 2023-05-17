@@ -187,10 +187,11 @@ def playTouchSound():
     except Exception as e:
         print(f"ERROR: Failed to play touch sound\r\n{e}")
 
+
 def removePastEvents():
     if len(events) == 0:
         return
-    
+
     global event_index, last_event_index
 
     removeCount = 0
@@ -212,8 +213,9 @@ def removePastEvents():
             last_event_index = -1
         else:
             last_event_index = -1
-    
+
     return removeCount
+
 
 def updateTemperature(showFahrenheit):
     if (eventWindow is None) or (adt is None):
@@ -334,13 +336,6 @@ while True:
             # print(f"{touch} Adj -> {touchAdj}")
             time.sleep(0.5)
 
-    # Check if the display is busy wait for it not being busy before continuing
-    """
-    if eventWindow.display.busy:
-        print("Display is busy")
-        continue
-    """
-
     # Update the display once per second
     timeCurrentSeconds = time.time()
     if (timeCurrentSeconds - timeLastSeconds) < 1.0:
@@ -371,7 +366,7 @@ while True:
                 eventWindow.IMG_FILE_NO_EVENTS_BACKGROUND, False)
             last_event_index = event_index
         else:
-            # Remove the textx
+            # Remove the text
             eventWindow.clearAllText()
             eventWindow.statusEventCount.text = f"{event_index + 1} of {len(events)}"
             eventWindow.changeBackground(events[event_index].imageCountDown)
@@ -398,9 +393,10 @@ while True:
         eventWindow.countlabelDays.text = ""
         eventWindow.countlabelHours.text = ""
         eventWindow.countlabelMinutes.text = ""
-        eventWindow.countDays.text = "Event Day!!!"
+        eventWindow.countDays.text = ""
         eventWindow.countHours.text = ""
         eventWindow.countMinutes.text = ""
+        eventWindow.eventDayText.text = "Event Day!!!"
 
         eventWindow.display.auto_refresh = True
         continue

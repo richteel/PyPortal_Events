@@ -21,10 +21,10 @@ class event:
         self.remainingHours = 0
         self.remainingMinutes = 0
         self.remainingSeconds = 0
-    
+
     def __lt__(self, other):
         return self.date < other.date
-    
+
     def __gt__(self, other):
         return self.date > other.date
 

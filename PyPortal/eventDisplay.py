@@ -46,7 +46,7 @@ class eventDisplay:
             if h >= 12:
                 amPm = "PM"
             if h > 12:
-                h = h -12
+                h = h - 12
             return "{:02}/{:02}/{} {:2}:{:02}:{:02} {}".format(
                 datetime.tm_mon,
                 datetime.tm_mday,
@@ -105,7 +105,7 @@ class eventDisplay:
         # ------------- Title ------------- #
         self.title = Label(
             font=self.fontLarge,
-            text="Title",
+            text="",
             color=0xF0C810,
             background_color=None,
             anchor_point=(0.0, 0.0),
@@ -115,7 +115,7 @@ class eventDisplay:
         # ------------- Subtitle ------------- #
         self.subtitle = Label(
             font=self.fontMedium,
-            text="Subtitle",
+            text="",
             color=0xF0C810,
             background_color=None,
             anchor_point=(0.0, 0.0),
@@ -131,15 +131,15 @@ class eventDisplay:
         # ------------- Count Labels ------------- #
         self.countlabelDays = Label(
             font=self.fontMedium,
-            text="Days",
+            text="",
             color=0xF0C810,
             background_color=None,
             anchor_point=(0.0, 0.0),
-            anchored_position=(countPosDaysX + spaceX , countPosY),
+            anchored_position=(countPosDaysX + spaceX, countPosY),
         )
         self.countlabelHours = Label(
             font=self.fontMedium,
-            text="Hours",
+            text="",
             color=0xF0C810,
             background_color=None,
             anchor_point=(0.0, 0.0),
@@ -147,7 +147,7 @@ class eventDisplay:
         )
         self.countlabelMinutes = Label(
             font=self.fontMedium,
-            text="Mins.",
+            text="",
             color=0xF0C810,
             background_color=None,
             anchor_point=(0.0, 0.0),
@@ -157,7 +157,7 @@ class eventDisplay:
         # ------------- Counts ------------- #
         self.countDays = Label(
             font=self.fontLarge,
-            text="00",
+            text="",
             color=0xFFFFFF,
             background_color=None,
             anchor_point=(1.0, 0.0),
@@ -165,7 +165,7 @@ class eventDisplay:
         )
         self.countHours = Label(
             font=self.fontLarge,
-            text="00",
+            text="",
             color=0xFFFFFF,
             background_color=None,
             anchor_point=(1.0, 0.0),
@@ -173,11 +173,19 @@ class eventDisplay:
         )
         self.countMinutes = Label(
             font=self.fontLarge,
-            text="00",
+            text="",
             color=0xFFFFFF,
             background_color=None,
             anchor_point=(1.0, 0.0),
             anchored_position=(countPosMinsX, countPosY),
+        )
+        self.eventDayText = Label(
+            font=self.fontLarge,
+            text="",
+            color=0xFFFFFF,
+            background_color=None,
+            anchor_point=(0.5, 0.0),
+            anchored_position=(160, countPosY),
         )
 
         # ------------- GROUP - gpWindow ------------- #
@@ -192,27 +200,34 @@ class eventDisplay:
         self.gpWindow.append(self.countDays)
         self.gpWindow.append(self.countHours)
         self.gpWindow.append(self.countMinutes)
+        self.gpWindow.append(self.eventDayText)
         # Add the Group to the Display
         self.display.show(self.gpWindow)
 
         # ************** TOUCH AREAS **************
         self.touchTemperature = rectangleTL_BR(pointXY(0, 0), pointXY(40, 40))
         self.touchTime = rectangleTL_BR(pointXY(60, 0), pointXY(260, 40))
-        self.touchEventPrevious = rectangleTL_BR(pointXY(0, 60), pointXY(150, 180))
-        self.touchEventNext = rectangleTL_BR(pointXY(170, 60), pointXY(320, 180))
-        self.touchBrightnessMinus = rectangleTL_BR(pointXY(0, 200), pointXY(40, 240))
-        self.touchBrightnessAuto = rectangleTL_BR(pointXY(80, 200), pointXY(240, 240))
-        self.touchBrightnessPlus = rectangleTL_BR(pointXY(280, 200), pointXY(320, 240))
+        self.touchEventPrevious = rectangleTL_BR(
+            pointXY(0, 60), pointXY(150, 180))
+        self.touchEventNext = rectangleTL_BR(
+            pointXY(170, 60), pointXY(320, 180))
+        self.touchBrightnessMinus = rectangleTL_BR(
+            pointXY(0, 200), pointXY(40, 240))
+        self.touchBrightnessAuto = rectangleTL_BR(
+            pointXY(80, 200), pointXY(240, 240))
+        self.touchBrightnessPlus = rectangleTL_BR(
+            pointXY(280, 200), pointXY(320, 240))
 
     def clearAllText(self):
         self.title.text = ""
         self.subtitle.text = ""
         self.countDays.text = ""
-        self.countlabelDays.text =""
+        self.countlabelDays.text = ""
         self.countHours.text = ""
-        self.countlabelHours.text =""
+        self.countlabelHours.text = ""
         self.countMinutes.text = ""
-        self.countlabelMinutes.text =""
+        self.countlabelMinutes.text = ""
+        self.eventDayText.text = ""
 
     def _loadWifiSprites(self):
         # ------------- GROUP - gpWifi ------------- #
@@ -239,7 +254,7 @@ class eventDisplay:
 
         self.statusTemperature = Label(
             font=self.fontStatus,
-            text="Temperature",
+            text="",
             color=0x000000,
             background_color=None,
             anchor_point=(0.0, 0.5),
