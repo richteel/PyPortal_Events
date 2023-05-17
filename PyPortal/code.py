@@ -22,6 +22,7 @@ from event import event
 from secrets import secrets
 from eventDisplay import eventDisplay
 
+
 def adjustBacklight(val=-1.0):
     if (backlightAuto):
         # startAutoDimAt = 32768
@@ -52,6 +53,7 @@ def adjustBacklight(val=-1.0):
 
     return val
 
+
 def adjustTouch(touchTuple):
     MIN_X = 20
     MIN_Y = 18
@@ -74,6 +76,7 @@ def adjustTouch(touchTuple):
 
     return (x, y, touchTuple[2])
 
+
 def getTime(lastRefreshedTime, secondsToUpdate):
     if pyportal is None:
         return None
@@ -82,7 +85,8 @@ def getTime(lastRefreshedTime, secondsToUpdate):
         try:
             print("INFO: Getting time from internet!")
             if (not lastRefreshedTime):
-                eventWindow.changeBackground(eventWindow.IMG_FILE_CONNECTING_BACKGROUND, False)
+                eventWindow.changeBackground(
+                    eventWindow.IMG_FILE_CONNECTING_BACKGROUND, False)
 
             start = time.time()
             pyportal.get_local_time()  # pyportal.get_local_time(false) non-blocking?
@@ -92,15 +96,20 @@ def getTime(lastRefreshedTime, secondsToUpdate):
         except RuntimeError as e:
             print(f"WARN: Some error occured, retrying!\r\n{e}")
             if (not lastRefreshedTime):
-                eventWindow.changeBackground(eventWindow.IMG_FILE_CONNECT_FAILED_BACKGROUND, False)
+                eventWindow.changeBackground(
+                    eventWindow.IMG_FILE_CONNECT_FAILED_BACKGROUND, False)
         # Use try catch here as there is an error in adafruit_portalbase
         #   File "adafruit_portalbase/network.py", line 208, in get_strftime
         #   AttributeError: 'NoneType' object has no attribute 'get'
         except Exception as e:
             print(f"ERROR: Failed to getTime\r\n{e}")
-            eventWindow.changeBackground(eventWindow.IMG_FILE_CONNECT_FAILED_BACKGROUND, False)
+            eventWindow.changeBackground(
+                eventWindow.IMG_FILE_CONNECT_FAILED_BACKGROUND, False)
+
+    removePastEvents()
 
     return lastRefreshedTime
+
 
 def loadSdCard():
     # load events from SD Card
@@ -136,10 +145,14 @@ def loadSdCard():
     except OSError as e:
         print(f"ERROR: Could not read text file.\r\n{e}")
 
+    if len(events) > 0:
+        events.sort()
+
+
 def networkQuality():
     if eventWindow is None:
         return
-    
+
     retval = -1
     dBm = -100
 
@@ -164,8 +177,9 @@ def networkQuality():
             eventWindow.spritesWifi[0] = 1
         else:
             eventWindow.spritesWifi[0] = 0
-        
+
     return retval
+
 
 def playTouchSound():
     try:
@@ -173,12 +187,41 @@ def playTouchSound():
     except Exception as e:
         print(f"ERROR: Failed to play touch sound\r\n{e}")
 
+def removePastEvents():
+    if len(events) == 0:
+        return
+    
+    global event_index, last_event_index
+
+    removeCount = 0
+    currentEvent = events[event_index]
+
+    for i, e in reversed(list(enumerate(events))):
+        if e.remainingTime < -86400:
+            print(f"INFO: Removing item {i}: {e}")
+            events.pop(i)
+            removeCount = removeCount + 1
+
+    if removeCount > 0:
+        # Does the array pointer point to the same object?
+        if currentEvent != events[event_index]:
+            for idx, item in enumerate(events):
+                if item == currentEvent:
+                    event_index = idx
+                    break
+            last_event_index = -1
+        else:
+            last_event_index = -1
+    
+    return removeCount
+
 def updateTemperature(showFahrenheit):
     if (eventWindow is None) or (adt is None):
         return
-    
+
     # read the temperature sensor
-    tempOffset = -10.5  # Added offset due to the heat from backlight
+    # tempOffset = -10.5  # Added offset due to the heat from backlight
+    tempOffset = -6.6
     temperature = adt.temperature + tempOffset
     tempText = "{0:5.1f}° C".format(temperature)
     # print("INFO: Temperature = " + tempText)
@@ -257,7 +300,7 @@ while True:
     if touch:
         touchAdj = adjustTouch(touch)
         touchHandled = False
-        
+
         if eventWindow.touchTemperature.pointInside(touchAdj):
             temperatureInF = not temperatureInF
             touchHandled = True
@@ -285,11 +328,18 @@ while True:
             backlightAuto = False
             backlightVal = backlightVal + backlightStepSize
             touchHandled = True
-    
+
         if touchHandled:
             playTouchSound()
             # print(f"{touch} Adj -> {touchAdj}")
             time.sleep(0.5)
+
+    # Check if the display is busy wait for it not being busy before continuing
+    """
+    if eventWindow.display.busy:
+        print("Display is busy")
+        continue
+    """
 
     # Update the display once per second
     timeCurrentSeconds = time.time()
@@ -298,10 +348,13 @@ while True:
 
     timeLastSeconds = timeCurrentSeconds
 
-    eventWindow.statusDateTime.text = eventDisplay.format_datetime(time.localtime(), timeFormat24)
+    eventWindow.display.auto_refresh = False
+    eventWindow.statusDateTime.text = eventDisplay.format_datetime(
+        time.localtime(), timeFormat24)
     networkQuality()
     updateTemperature(temperatureInF)
     backlightVal = adjustBacklight(backlightVal)
+    eventWindow.display.auto_refresh = True
 
     # only query the online time once per hour (and on first run)
     refresh_time = getTime(refresh_time, 3600)
@@ -310,13 +363,15 @@ while True:
         time.sleep(3)
         continue
 
+    eventWindow.display.auto_refresh = False
     # Show the events with countdown
     if event_index != last_event_index:
         if len(events) == 0:
-            eventWindow.changeBackground(eventWindow.IMG_FILE_NO_EVENTS_BACKGROUND, False)
+            eventWindow.changeBackground(
+                eventWindow.IMG_FILE_NO_EVENTS_BACKGROUND, False)
             last_event_index = event_index
         else:
-            # Remove the text
+            # Remove the textx
             eventWindow.clearAllText()
             eventWindow.statusEventCount.text = f"{event_index + 1} of {len(events)}"
             eventWindow.changeBackground(events[event_index].imageCountDown)
@@ -334,6 +389,7 @@ while True:
             last_event_index = event_index
 
     if len(events) == 0:
+        eventWindow.display.auto_refresh = True
         continue
 
     # Update the remaining time
@@ -345,8 +401,11 @@ while True:
         eventWindow.countDays.text = "Event Day!!!"
         eventWindow.countHours.text = ""
         eventWindow.countMinutes.text = ""
+
+        eventWindow.display.auto_refresh = True
         continue
 
     eventWindow.countDays.text = f"{events[event_index].remainingDays}"
     eventWindow.countHours.text = f"{events[event_index].remainingHours}"
     eventWindow.countMinutes.text = f"{events[event_index].remainingMinutes}"
+    eventWindow.display.auto_refresh = True

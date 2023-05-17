@@ -215,6 +215,18 @@
             "subtitle": "New York, New York",
             "title": "Day 16",
             "year": "2023"
+        },
+        {
+            "day": "25",
+            "forecolor": "0xF0C810",
+            "hour": "00",
+            "imageCountDown": "christmas_background.bmp",
+            "imageEventDay": "christmas_event.bmp",
+            "minute": "00",
+            "month": "12",
+            "subtitle": "Past Event",
+            "title": "Christmas",
+            "year": "2022"
         }
     ],
     "secrets": {
