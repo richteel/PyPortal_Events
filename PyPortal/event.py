@@ -28,6 +28,12 @@ class event:
     def __gt__(self, other):
         return self.date > other.date
 
+    def __repr__(self):
+        return "event()"
+
+    def __str__(self):
+        return f"event(title: {self.title}, subtitle: {self.subtitle}, remainingTime: {self.remainingTime}) for {self.month}/{self.day}/{self.year} {self.hour:02}:{self.minute:02}"
+
     def remainingUpdate(self):
         now = time.localtime()
         remaining = time.mktime(self.date) - time.mktime(now)

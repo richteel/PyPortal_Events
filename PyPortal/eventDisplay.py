@@ -13,8 +13,6 @@ import adafruit_imageload
 from adafruit_bitmap_font import bitmap_font
 from adafruit_display_shapes.rect import Rect
 from adafruit_display_text.label import Label
-from geometryPointRect import pointXY
-from geometryPointRect import rectangleTL_BR
 
 
 # **************** CLASS ******************
@@ -29,7 +27,11 @@ class eventDisplay:
     IMG_FILE_NOT_FOUND = "not_found.bmp"
     IMG_FILE_TITLE_BACKGROUND = "title.bmp"
     IMG_FILE_WIFI_SPRITES = "wifi.bmp"
+    DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    MONTHNAME = ["Jan", "Feb", "Mar", "Apr", "May",
+                 "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
+    # **************** STATIC METHODS ******************
     def format_datetime(datetime, show24hourFormat):
         if show24hourFormat:
             return "{:02}/{:02}/{} {:02}:{:02}:{:02}".format(
@@ -47,16 +49,24 @@ class eventDisplay:
                 amPm = "PM"
             if h > 12:
                 h = h - 12
-            return "{:02}/{:02}/{} {:2}:{:02}:{:02} {}".format(
+            return "{} {:2}/{:2}/{} {:2}:{:02} {}".format(
+                eventDisplay.DOW[datetime.tm_wday],
                 datetime.tm_mon,
                 datetime.tm_mday,
                 datetime.tm_year,
                 h,
                 datetime.tm_min,
-                datetime.tm_sec,
                 amPm
             )
 
+    def pointInside(rect, pt):
+        if (pt[0] > rect.x and pt[0] < (rect.x + rect.width) and pt[1] > rect.y and pt[1] < (rect.y + rect.height)):
+            # print(f"Point {pt} is in rectangle [({self.topLeftPoint.x}, {self.topLeftPoint.y}), ({self.bottomRightPoint.x}, {self.bottomRightPoint.y})]")
+            return True
+        else:
+            return False
+
+    # **************** CLASS INITIALIZATION ******************
     def __init__(self, imgFolder="", eventImagesFolder=""):
         self.display = board.DISPLAY
 
@@ -204,31 +214,16 @@ class eventDisplay:
         # Add the Group to the Display
         self.display.show(self.gpWindow)
 
-        # ************** TOUCH AREAS **************
-        self.touchTemperature = rectangleTL_BR(pointXY(0, 0), pointXY(40, 40))
-        self.touchTime = rectangleTL_BR(pointXY(60, 0), pointXY(260, 40))
-        self.touchEventPrevious = rectangleTL_BR(
-            pointXY(0, 60), pointXY(150, 180))
-        self.touchEventNext = rectangleTL_BR(
-            pointXY(170, 60), pointXY(320, 180))
-        self.touchBrightnessMinus = rectangleTL_BR(
-            pointXY(0, 200), pointXY(40, 240))
-        self.touchBrightnessAuto = rectangleTL_BR(
-            pointXY(80, 200), pointXY(240, 240))
-        self.touchBrightnessPlus = rectangleTL_BR(
-            pointXY(280, 200), pointXY(320, 240))
+        # ------------- TOUCH AREAS ------------- #
+        self.touchTemperature = Rect(0, 0, 40, 40)
+        self.touchTime = Rect(60, 0, 200, 40)
+        self.touchEventPrevious = Rect(0, 60, 150, 120)
+        self.touchEventNext = Rect(170, 60, 150, 120)
+        self.touchBrightnessMinus = Rect(0, 200, 40, 40)
+        self.touchBrightnessAuto = Rect(80, 200, 160, 40)
+        self.touchBrightnessPlus = Rect(280, 200, 40, 40)
 
-    def clearAllText(self):
-        self.title.text = ""
-        self.subtitle.text = ""
-        self.countDays.text = ""
-        self.countlabelDays.text = ""
-        self.countHours.text = ""
-        self.countlabelHours.text = ""
-        self.countMinutes.text = ""
-        self.countlabelMinutes.text = ""
-        self.eventDayText.text = ""
-
+    # **************** INTERNAL METHODS ******************
     def _loadWifiSprites(self):
         # ------------- GROUP - gpWifi ------------- #
         # Create a TileGrid to hold the bitmap
@@ -257,8 +252,8 @@ class eventDisplay:
             text="",
             color=0x000000,
             background_color=None,
-            anchor_point=(0.0, 0.5),
-            anchored_position=(2, 10),
+            anchor_point=(0.0, 0.0),
+            anchored_position=(2, 3),
         )
 
         self.statusDateTime = Label(
@@ -266,9 +261,9 @@ class eventDisplay:
             text="No Time Info",
             color=0x000000,
             background_color=None,
-            anchor_point=(0.5, 0.5),
-            # anchored_position=(160, 10),
-            anchored_position=(180, 10),
+            anchor_point=(0.5, 0.0),
+            # anchored_position=(160, 3),
+            anchored_position=(180, 3),
         )
 
         # Add the sprite to the Wi-Fi Group
@@ -286,14 +281,14 @@ class eventDisplay:
         self.gpFooter.append(rectFoot)
 
         # ------------- GROUP - gpbacklightMinus ------------- #
-        self.set_image(self.gpButtonDim, self.imageFolderPath +
-                       "/" + self.IMG_FILE_DIM_ICON)
+        self._set_image(self.gpButtonDim, self.imageFolderPath +
+                        "/" + self.IMG_FILE_DIM_ICON)
         self.gpButtonDim.x = 0
         self.gpButtonDim.y = 220
 
         # ------------- GROUP - gpbacklightPlus ------------- #
-        self.set_image(self.gpButtonBright,
-                       self.imageFolderPath + "/" + self.IMG_FILE_BRIGHT_ICON)
+        self._set_image(self.gpButtonBright,
+                        self.imageFolderPath + "/" + self.IMG_FILE_BRIGHT_ICON)
         self.gpButtonBright.x = 300
         self.gpButtonBright.y = 220
 
@@ -322,31 +317,8 @@ class eventDisplay:
         self.gpFooter.append(self.statusEventCount)
         self.gpFooter.append(self.statusBrightness)
 
-    # This function allows us to change the background image
-
-    def changeBackground(self, filename, useEventImageLocation=True, filenameContainsPath=False):
-        # ------------- GROUP - gpBackground ------------- #
-        fullFileName = self.imageFolderPath + "/" + filename
-
-        if useEventImageLocation:
-            fullFileName = self.eventImageFolderPath + "/" + filename
-        if filenameContainsPath:
-            fullFileName = filename
-
-        try:
-            self.set_image(self.gpBackground, fullFileName)
-        except Exception as e:
-            print(f"ERROR: Failed to load the image {fullFileName}\r\n{e}")
-            self.set_image(self.gpBackground,
-                           self.imageFolderPath + "/" + self.IMG_FILE_NOT_FOUND)
-
-        self.gpBackground.x = 0
-        self.gpBackground.y = 0
-
-        return
-
     # This will handle switching Images and Icons
-    def set_image(self, group, filename):
+    def _set_image(self, group, filename):
         """Set the image file for a given goup for display.
         This is most useful for Icons or image slideshows.
             :param group: The chosen group
@@ -374,3 +346,37 @@ class eventDisplay:
         group.append(image_sprite)
 
         return
+
+    # **************** PUBLIC METHODS ******************
+    # This function allows us to change the background image
+    def changeBackground(self, filename, useEventImageLocation=True, filenameContainsPath=False):
+        # ------------- GROUP - gpBackground ------------- #
+        fullFileName = self.imageFolderPath + "/" + filename
+
+        if useEventImageLocation:
+            fullFileName = self.eventImageFolderPath + "/" + filename
+        if filenameContainsPath:
+            fullFileName = filename
+
+        try:
+            self._set_image(self.gpBackground, fullFileName)
+        except Exception as e:
+            print(f"ERROR: Failed to load the image {fullFileName}\r\n{e}")
+            self._set_image(self.gpBackground,
+                            self.imageFolderPath + "/" + self.IMG_FILE_NOT_FOUND)
+
+        self.gpBackground.x = 0
+        self.gpBackground.y = 0
+
+        return
+
+    def clearAllText(self):
+        self.title.text = ""
+        self.subtitle.text = ""
+        self.countDays.text = ""
+        self.countlabelDays.text = ""
+        self.countHours.text = ""
+        self.countlabelHours.text = ""
+        self.countMinutes.text = ""
+        self.countlabelMinutes.text = ""
+        self.eventDayText.text = ""

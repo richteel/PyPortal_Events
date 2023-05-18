@@ -15,8 +15,6 @@ import json
 import adafruit_adt7410
 import adafruit_touchscreen
 from adafruit_pyportal import PyPortal
-from adafruit_bitmap_font import bitmap_font
-from adafruit_display_text.label import Label
 from analogio import AnalogIn
 from event import event
 from secrets import secrets
@@ -24,6 +22,12 @@ from eventDisplay import eventDisplay
 
 
 def adjustBacklight(val=-1.0):
+    """
+    There is also an ambient light sensor on the side, which points through to the front, 
+    as seen in the second image. The light sensor is an analog input, connected to board.
+    LIGHT (CircuitPython) or A2 (Arduino) you can read it as any analog value ranging 
+    from 0 (dark) to 1023 (in Arduino) or 65535 (CircuitPython) when bright.
+    """
     if (backlightAuto):
         # startAutoDimAt = 32768
         minAutoBrightness = 0.01
@@ -52,6 +56,14 @@ def adjustBacklight(val=-1.0):
         eventWindow.statusBrightness.text = "{:3.0f} %".format(val * 100.0)
 
     return val
+
+
+"""
+Most likely, this can be replaced with proper values when initializing
+the touch display with the calibration parameter/attribute. The values
+for MIN_X, MIN_Y, MAX_X, MAX_Y where determined by touching the corners
+of the screen and reading the reported values using a print statement.
+"""
 
 
 def adjustTouch(touchTuple):
@@ -106,7 +118,8 @@ def getTime(lastRefreshedTime, secondsToUpdate):
             eventWindow.changeBackground(
                 eventWindow.IMG_FILE_CONNECT_FAILED_BACKGROUND, False)
 
-    removePastEvents()
+    if lastRefreshedTime:
+        removePastEvents()
 
     return lastRefreshedTime
 
@@ -198,6 +211,7 @@ def removePastEvents():
     currentEvent = events[event_index]
 
     for i, e in reversed(list(enumerate(events))):
+        e.remainingUpdate()
         if e.remainingTime < -86400:
             print(f"INFO: Removing item {i}: {e}")
             events.pop(i)
@@ -218,12 +232,19 @@ def removePastEvents():
 
 
 def updateTemperature(showFahrenheit):
+    """
+    On the top of the PyPortal (not the Pynt) is the ADT7410 Analog Devices temperature 
+    sensor with 16-bit 0.0078°C temperature resolution and 0.5°C temperature tolerance. 
+    The sensor is I2C connected, use the Arduino or CircuitPython libraries to read it.
+    """
     if (eventWindow is None) or (adt is None):
         return
 
     # read the temperature sensor
     # tempOffset = -10.5  # Added offset due to the heat from backlight
-    tempOffset = -6.6
+    # Gave up and set this to zero as the temperature is all over the place.
+    # Never really expected this to work well but it ended being worse that doing nothing.
+    tempOffset = 0
     temperature = adt.temperature + tempOffset
     tempText = "{0:5.1f}° C".format(temperature)
     # print("INFO: Temperature = " + tempText)
@@ -303,30 +324,30 @@ while True:
         touchAdj = adjustTouch(touch)
         touchHandled = False
 
-        if eventWindow.touchTemperature.pointInside(touchAdj):
+        if eventDisplay.pointInside(eventWindow.touchTemperature, touchAdj):
             temperatureInF = not temperatureInF
             touchHandled = True
-        elif eventWindow.touchTime.pointInside(touchAdj):
+        elif eventDisplay.pointInside(eventWindow.touchTime, touchAdj):
             timeFormat24 = not timeFormat24
             touchHandled = True
-        elif eventWindow.touchEventPrevious.pointInside(touchAdj):
+        elif eventDisplay.pointInside(eventWindow.touchEventPrevious, touchAdj):
             event_index = event_index - 1
             if event_index < 0:
                 event_index = len(events) - 1
             touchHandled = True
-        elif eventWindow.touchEventNext.pointInside(touchAdj):
+        elif eventDisplay.pointInside(eventWindow.touchEventNext, touchAdj):
             event_index = event_index + 1
             if event_index > len(events) - 1:
                 event_index = 0
             touchHandled = True
-        elif eventWindow.touchBrightnessMinus.pointInside(touchAdj):
+        elif eventDisplay.pointInside(eventWindow.touchBrightnessMinus, touchAdj):
             backlightAuto = False
             backlightVal = backlightVal - backlightStepSize
             touchHandled = True
-        elif eventWindow.touchBrightnessAuto.pointInside(touchAdj):
+        elif eventDisplay.pointInside(eventWindow.touchBrightnessAuto, touchAdj):
             backlightAuto = True
             touchHandled = True
-        elif eventWindow.touchBrightnessPlus.pointInside(touchAdj):
+        elif eventDisplay.pointInside(eventWindow.touchBrightnessPlus, touchAdj):
             backlightAuto = False
             backlightVal = backlightVal + backlightStepSize
             touchHandled = True
@@ -396,7 +417,7 @@ while True:
         eventWindow.countDays.text = ""
         eventWindow.countHours.text = ""
         eventWindow.countMinutes.text = ""
-        eventWindow.eventDayText.text = "Event Day!!!"
+        eventWindow.eventDayText.text = "It's Today!!!"
 
         eventWindow.display.auto_refresh = True
         continue
