@@ -233,6 +233,8 @@
         "aio_key": "YOUR_ADAFRUITIO_KEY",
         "aio_username": "YOUR_ADAFRUIT_ACCOUNT_USERNAME",
         "password": "CHANGE ME",
+        "screen_height": 320,
+        "screen_width": 480,
         "ssid": "CHANGE ME",
         "timezone": "America/New_York"
     }

@@ -157,8 +157,7 @@
                                 <option value="America/Araguaina">America/Araguaina</option>
                                 <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires</option>
                                 <option value="America/Argentina/Catamarca">America/Argentina/Catamarca</option>
-                                <option value="America/Argentina/ComodRivadavia">America/Argentina/ComodRivadavia
-                                </option>
+                                <option value="America/Argentina/ComodRivadavia">America/Argentina/ComodRivadavia</option>
                                 <option value="America/Argentina/Cordoba">America/Argentina/Cordoba</option>
                                 <option value="America/Argentina/Jujuy">America/Argentina/Jujuy</option>
                                 <option value="America/Argentina/La_Rioja">America/Argentina/La_Rioja</option>
@@ -717,6 +716,29 @@
                             &nbsp;
                             <input type="button" onclick="showPassword(this);" value="Show" />
                         </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 flex_full_width">
+                            <h2>Screen Size</h2>
+                            <input type="hidden" id="screen_width" />
+                            <input type="hidden" id="screen_height" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <input type="radio" id="320x240" name="screen_size" value="320x240" onchange="updateData(screen_width);">
+                        <label for="320x240" class="radioLabel">320 x 240 Pixels</label> 
+                        <span class="help">(<a href="https://www.adafruit.com/product/4116" target="_blank">PyPortal</a> or
+                        <a href="https://www.adafruit.com/product/4465" target="_blank">PyPortal Pynt</a>)</span><br />
+                        <input type="radio" id="480x320" name="screen_size" value="480x320" onchange="updateData(screen_width);">
+                        <label for="480x320" class="radioLabel">480 x 320 Pixels</label> 
+                        <span class="help">(<a href="https://www.adafruit.com/product/4444" target="_blank">PyPortal Titano</a>)</span><br />
+                        <input type="radio" id="other" name="screen_size" value="other" onchange="updateData(screen_width);">
+                        <label for="other" class="radioLabel">Other</label><br />
+                        <label for="screen_width_other">Width</label>&nbsp;
+                        <input type="text" id="screen_width_other" onchange="updateData(screen_width);" /><br />
+                        <label for="screen_height_other">Height</label>&nbsp;
+                        <input type="text" id="screen_height_other" onchange="updateData(screen_width);" />
                     </div>
                     
                     <div class="row" id="secrets_actions">

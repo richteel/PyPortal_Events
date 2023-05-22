@@ -193,6 +193,15 @@ label::after {
     text-align: right;
 }
 
+.radioLabel {
+    min-width: 8em !important;
+    text-align: left !important;
+}
+
+.radioLabel::after {
+    content: "" !important;
+}
+
 .scrollV {
     background-color: var(--bookmark_area_bgcolor);
     color: var(--bookmark_area_color);

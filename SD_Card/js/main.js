@@ -460,6 +460,20 @@ function getClosestElem(currentElement, selector) {
     return returnElement
 }
 
+function getScreenSizeValue() {
+    const screenSizeRadioButtons = document.getElementsByName("screen_size");
+    let retVal = null;
+
+    for (let i = 0; i < screenSizeRadioButtons.length; i++) {
+        if (screenSizeRadioButtons[i].checked) {
+            retVal = screenSizeRadioButtons[i].value;
+            break;
+        }
+    }
+
+    return retVal;
+}
+
 function getTabContainer(tabId) {
     let containerId = null;
     let tab = document.getElementById(tabId);
@@ -696,6 +710,12 @@ function uiUpdate() {
     const aioUsernameField = document.getElementById("aio_username");
     const aioKeyField = document.getElementById("aio_key");
     const checkboxAll = document.getElementById("selectAllCheckbox");
+    const screenSize = getScreenSizeValue();
+    const screenSize320x240 = document.getElementById("320x240");
+    const screenSize480x320 = document.getElementById("480x320");
+    const screenSizeOther = document.getElementById("other");
+    const screenSizeOtherWidth = document.getElementById("screen_width_other");
+    const screenSizeOtherHeight = document.getElementById("screen_height_other");
 
     if (ssidField) {
         ssidField.value = configData.secrets.ssid;
@@ -712,6 +732,29 @@ function uiUpdate() {
     if (aioKeyField) {
         aioKeyField.value = configData.secrets.aio_key;
     }
+    
+    if(configData.secrets.screen_width) {
+        if(configData.secrets.screen_width == 320 && configData.secrets.screen_height == 240) {
+            screenSize320x240.checked = true;
+        }
+        else if(configData.secrets.screen_width == 480 && configData.secrets.screen_height == 320) {
+            screenSize480x320.checked = true;
+        }
+        else {
+            screenSizeOther.checked = true;
+            screenSizeOtherWidth.value = configData.secrets.screen_width;
+            screenSizeOtherHeight.value = configData.secrets.screen_height;
+        }
+    }
+    else {
+        screenSize320x240.checked = true;
+    }
+    // Set default screen size if none selected
+    if (!screenSize) {
+        document.getElementById("320x240").checked = true;
+    }
+
+
 
     const events_content = document.getElementById("eventsContent");
     const events_none_div = document.getElementById("events_none");
@@ -934,6 +977,13 @@ function updateData(e) {
     if (!e.id || e.id.length <= 0) {
         return;
     }
+    
+    const screenSize = getScreenSizeValue();
+    const screenSize320x240 = document.getElementById("320x240");
+    const screenSize480x320 = document.getElementById("480x320");
+    const screenSizeOther = document.getElementById("other");
+    const screenSizeOtherWidth = document.getElementById("screen_width_other");
+    const screenSizeOtherHeight = document.getElementById("screen_height_other");
 
     switch (e.id) {
         case ("ssid"):
@@ -951,7 +1001,25 @@ function updateData(e) {
         case ("aio_key"):
             configData.secrets.aio_key = e.value;
             break;
+        case ("screen_width"):
+            switch (screenSize) {
+                case "480x320":
+                    configData.secrets.screen_width = 480;
+                    configData.secrets.screen_height = 320;
+                    break;
+                case "other":
+                    configData.secrets.screen_width = screenSizeOtherWidth.value;
+                    configData.secrets.screen_height = screenSizeOtherHeight.value;
+                    break;
+                case "320x240":
+                default:
+                    configData.secrets.screen_width = 320;
+                    configData.secrets.screen_height = 240;
+                    break;
+            }
+            break;
         default:
+            console.dir(e);
             break;
     }
 }
