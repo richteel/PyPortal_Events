@@ -2,10 +2,12 @@ import time
 
 
 class event:
-    def __init__(self, title, subtitle, year, month, day, hour, minute, imageCountDown, imageEventDay, forecolor=0xF0C810):
+    def __init__(self, title, subtitle, year, month, day, hour, minute, imageCountDown, imageEventDay, backcolor=0x1888A8, forecolor=0xF0C810, forecolorCount=0xFFFFFF):
         self.title = title
         self.subtitle = subtitle
+        self.backcolor = backcolor
         self.forecolor = forecolor
+        self.forecolorCount = forecolorCount
         self.year = year
         self.month = month
         self.day = day

@@ -7,6 +7,7 @@ This example will figure out the current local time using the internet, and
 then draw out a countdown clock until an event occurs!
 Once the event is happening, a new graphic is shown
 """
+import gc
 import math
 import time
 import board
@@ -69,8 +70,8 @@ of the screen and reading the reported values using a print statement.
 def adjustTouch(touchTuple):
     MIN_X = 20
     MIN_Y = 18
-    MAX_X = 319
-    MAX_Y = 230
+    MAX_X = screen_width - 1
+    MAX_Y = screen_height - 10
 
     x = touchTuple[0] - MIN_X
     y = touchTuple[1] - MIN_Y
@@ -137,6 +138,8 @@ def loadSdCard():
             secrets["timezone"] = y["secrets"]["timezone"]
             secrets["aio_username"] = y["secrets"]["aio_username"]
             secrets["aio_key"] = y["secrets"]["aio_key"]
+            secrets["screen_width"] = y["secrets"].get("screen_width", 320)
+            secrets["screen_height"] = y["secrets"].get("screen_height", 240)
 
             imagePathRoot = "/sd"
 
@@ -153,13 +156,17 @@ def loadSdCard():
                                     int(y["events"][i]["minute"]),
                                     y["events"][i]["imageCountDown"],
                                     y["events"][i]["imageEventDay"],
-                                    int(y["events"][i]["forecolor"])))
+                                    int(y["events"][i].get("backcolor", 0x1888A8)),
+                                    int(y["events"][i].get("forecolor", 0xF0C810)),
+                                    int(y["events"][i].get("foreColorCount", 0xFFFFFF))))
 
     except OSError as e:
         print(f"ERROR: Could not read text file.\r\n{e}")
 
     if len(events) > 0:
         events.sort()
+
+    gc.collect()
 
 
 def networkQuality():
@@ -200,6 +207,8 @@ def playTouchSound():
     except Exception as e:
         print(f"ERROR: Failed to play touch sound\r\n{e}")
 
+    gc.collect()
+
 
 def removePastEvents():
     if len(events) == 0:
@@ -227,6 +236,8 @@ def removePastEvents():
             last_event_index = -1
         else:
             last_event_index = -1
+        
+        gc.collect()
 
     return removeCount
 
@@ -274,15 +285,6 @@ pyportal = PyPortal(status_neopixel=board.NEOPIXEL)
 eventWindow = eventDisplay(cwd, sdcardPath)
 eventWindow.clearAllText()
 
-# Touchscreen setup
-screen_width = 320
-screen_height = 240
-ts = adafruit_touchscreen.Touchscreen(board.TOUCH_XL, board.TOUCH_XR,
-                                      board.TOUCH_YD, board.TOUCH_YU,
-                                      calibration=(
-                                          (5200, 59000), (5800, 57000)),
-                                      size=(screen_width, screen_height))
-
 # ------------- Inputs and Outputs Setup ------------- #
 try:
     # attempt to init. the temperature sensor
@@ -308,6 +310,19 @@ timeFormat24 = True
 
 # ------------------ Load Events from SD Card -------------------------
 loadSdCard()
+
+# ------------------ Touchscreen setup -------------------------
+screen_width = secrets["screen_width"]
+screen_height = secrets["screen_height"]
+eventWindow.screen_width = screen_width
+eventWindow.screen_height = screen_height
+eventWindow.layoutScreen()
+
+ts = adafruit_touchscreen.Touchscreen(board.TOUCH_XL, board.TOUCH_XR,
+                                      board.TOUCH_YD, board.TOUCH_YU,
+                                      calibration=(
+                                          (5200, 59000), (5800, 57000)),
+                                      size=(screen_width, screen_height))
 
 # ------------------ Get the time -------------------------
 # Declare the variable to let us know when the time was last acquired
@@ -363,6 +378,15 @@ while True:
         continue
 
     timeLastSeconds = timeCurrentSeconds
+    start_mem = gc.mem_free()
+    gc.collect()
+    end_mem = gc.mem_free()
+
+    """
+    if start_mem < 10000 or end_mem < 10000 or end_mem < start_mem or (start_mem - end_mem) > 10000:
+        print(f"Point 1 Available memory {gc.mem_free()} bytes")
+        print(f"Point 2 Available memory {gc.mem_free()} bytes")
+    """
 
     eventWindow.display.auto_refresh = False
     eventWindow.statusDateTime.text = eventDisplay.format_datetime(
@@ -389,6 +413,7 @@ while True:
         else:
             # Remove the text
             eventWindow.clearAllText()
+            eventWindow.textBackground.hidden = False
             eventWindow.statusEventCount.text = f"{event_index + 1} of {len(events)}"
             eventWindow.changeBackground(events[event_index].imageCountDown)
             eventWindow.title.color = events[event_index].forecolor
@@ -396,6 +421,14 @@ while True:
             eventWindow.subtitle.color = events[event_index].forecolor
             eventWindow.subtitle.text = events[event_index].subtitle
             events[event_index].remainingUpdate()
+            eventWindow.countlabelDays.color = events[event_index].forecolor
+            eventWindow.countlabelHours.color = events[event_index].forecolor
+            eventWindow.countlabelMinutes.color = events[event_index].forecolor
+            eventWindow.eventDayText.color = events[event_index].forecolor
+            eventWindow.countDays.color = events[event_index].forecolorCount
+            eventWindow.countHours.color = events[event_index].forecolorCount
+            eventWindow.countMinutes.color = events[event_index].forecolorCount
+            eventWindow.textBackcolorPallet[0] = events[event_index].backcolor
 
             if events[event_index].remainingTime > 0:
                 eventWindow.countlabelDays.text = "Days"

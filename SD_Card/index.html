@@ -777,7 +777,9 @@
                         <span class="datacell datacellcheck">&nbsp;</span>
                         <span class="datacell">Title</span>
                         <span class="datacell">Subtitle</span>
+                        <span class="datacell">Backcolor</span>
                         <span class="datacell">Forecolor</span>
+                        <span class="datacell">Forecolor<br />Count</span>
                         <span class="datacell">Year</span>
                         <span class="datacell">Month</span>
                         <span class="datacell">Day</span>
@@ -786,25 +788,6 @@
                         <span class="datacell">Image Countdown</span>
                         <span class="datacell">Image Event Day</span>
                     </div>
-
-
-
-                    <!--<div class="row" id="event_template">
-                        <div class="col-12 flex_full_width">
-                            <input type="checkbox" id="" />
-                            <span id="event_id_"></span>
-                            <span id="event_title_"></span>
-                            <span id="event_subtitle_"></span>
-                            <span id="event_forecolor_"></span>
-                            <span id="event_year_"></span>
-                            <span id="event_month_"></span>
-                            <span id="event_day_"></span>
-                            <span id="event_hour_"></span>
-                            <span id="event_minute_"></span>
-                            <span id="event_imageCountDown_"></span>
-                            <span id="event_imageEventDay_"></span>
-                        </div>
-                    </div>-->
 
                     <div class="row" id="events_actions">
                         <div class="col-12 flex_full_width">
@@ -836,38 +819,46 @@
                 <label for="dialog_event_edit_subtitle">Subtitle</label><br />
                 <input type="text" id="dialog_event_edit_subtitle"></input>
             </div>
+            
             <div>
-                <label for="dialog_event_edit_forecolor">Forecolor</label>&nbsp;<div class="forecolorSample">&nbsp;
+                <label for="dialog_event_edit_backcolor">Backcolor for text area</label>&nbsp;<div class="backcolorSample">&nbsp;
+                </div><br />
+                <input type="text" id="dialog_event_edit_backcolor" onchange="changeForecolor(this);"></input>
+                <span class="help">HTML Hex Color as a hexidecimal number for text area background. (Default value is
+                    0x1888A8.)</span>
+            </div>
+
+
+            <div>
+                <label for="dialog_event_edit_forecolor">Forecolor for text</label>&nbsp;<div class="forecolorSample">&nbsp;
                 </div><br />
                 <input type="text" id="dialog_event_edit_forecolor" onchange="changeForecolor(this);"></input>
-                <span class="help">HTML Hex Color as a hexidecimal number for title and subtitle. (Default value is
-                    0xF0C810.) <div class="forecolorSampleDefault">&nbsp;</div></span>
+                <span class="help">HTML Hex Color as a hexidecimal number for title, subtitle, and count labels. (Default value is
+                    0xF0C810.)</span>
             </div>
             <div>
-                <label for="dialog_event_edit_year">Year</label><br />
-                <input type="text" id="dialog_event_edit_year"></input><br />
-                <span class="help">Required enter 4 digit year. (Accepted values are from 1970 to 2999.)</span>
+                <label for="dialog_event_edit_forecolor_count">Forecolor for counts</label>&nbsp;<div class="forecolorSampleCount">&nbsp;
+                </div><br />
+                <input type="text" id="dialog_event_edit_forecolor_count" onchange="changeForecolor(this);"></input>
+                <span class="help">HTML Hex Color as a hexidecimal number for count of days, hours, and minutes. (Default value is
+                    0xFFFFFF.)</span>
             </div>
             <div>
-                <label for="dialog_event_edit_month">Month</label><br />
-                <input type="text" id="dialog_event_edit_month"></input>
-                <span class="help">Required enter month as a number. (Accepted values are from 1 to 12.)</span>
+                <label for="dialog_event_datetime">Event Date</label><br />
+                <input type="date" id="dialog_event_edit_date" onchange="changeDate(this);"></input>
+                <span class="help">Required: Enter a date for the event.</span>
+                <input type="hidden" id="dialog_event_edit_year">
+                <input type="hidden" id="dialog_event_edit_month">
+                <input type="hidden" id="dialog_event_edit_day">
             </div>
             <div>
-                <label for="dialog_event_edit_day">Day</label><br />
-                <input type="text" id="dialog_event_edit_day"></input>
-                <span class="help">Required enter day. (Accepted values are from 1 to 31.)</span>
+                <label for="dialog_event_edit_hour">Time</label><br />
+                <input type="time" id="dialog_event_edit_time" onchange="changeTime(this);"></input>
+                <span class="help">Required: Enter a time for the event.</span>
+                <input type="hidden" id="dialog_event_edit_hour">
+                <input type="hidden" id="dialog_event_edit_minute">
             </div>
-            <div>
-                <label for="dialog_event_edit_hour">Hour</label><br />
-                <input type="text" id="dialog_event_edit_hour"></input>
-                <span class="help">Required enter hour. (Accepted values are from 0 to 23.)</span>
-            </div>
-            <div>
-                <label for="dialog_event_edit_minute">Minute</label><br />
-                <input type="text" id="dialog_event_edit_minute"></input>
-                <span class="help">Required enter hour. (Accepted values are from 0 to 59.)</span>
-            </div>
+
             <div>
                 <label for="dialog_event_edit_imageCountDown">Image Countdown</label><br />
                 <input type="text" id="dialog_event_edit_imageCountDown"></input>
@@ -889,7 +880,6 @@
 
     <script src="js/myDragMove.js"></script>
     <script src="js/main.js"></script>
-    <!--<script src="js/bookmarks.js"></script>-->
 </body>
 
 </html>

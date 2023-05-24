@@ -156,8 +156,8 @@ label::after {
     display: flex;
 }
 
-.forecolorSampleDefault {
-    background-color: #F0C810;
+.backcolorSample {
+    background-color: #1888A8;
     border: solid black 1px;
     display: inline-block;
     height: 14px;
@@ -169,6 +169,17 @@ label::after {
 
 .forecolorSample {
     background-color: #F0C810;
+    border: solid black 1px;
+    display: inline-block;
+    height: 14px;
+    width: 14px;
+
+    position: relative;
+    transform: translateY(33%);
+}
+
+.forecolorSampleCount {
+    background-color: #FFFFFF;
     border: solid black 1px;
     display: inline-block;
     height: 14px;

@@ -13,7 +13,7 @@ let configData = {
 
 let savedConfigData = {};
 
-const event = new makeStruct("title, subtitle, forecolor, year, month, day, hour, minute, imageCountDown, imageEventDay");
+const event = new makeStruct("title, subtitle, forecolor, foreColorCount, year, month, day, hour, minute, imageCountDown, imageEventDay");
 
 // let isSwiping = false;
 let tabs_container, contents_container, tabs_left_button, tabs_right_button;
@@ -29,7 +29,9 @@ const DIALOGS = [DIALOG_EVENT];
 const event_id_elem = document.getElementById("dialog_event_edit_id");
 const event_title_elem = document.getElementById("dialog_event_edit_title");
 const event_subtitle_elem = document.getElementById("dialog_event_edit_subtitle");
+const event_backcolor_elem = document.getElementById("dialog_event_edit_backcolor");
 const event_forecolor_elem = document.getElementById("dialog_event_edit_forecolor");
+const event_forecolor_count_elem = document.getElementById("dialog_event_edit_forecolor_count");
 const event_year_elem = document.getElementById("dialog_event_edit_year");
 const event_month_elem = document.getElementById("dialog_event_edit_month");
 const event_day_elem = document.getElementById("dialog_event_edit_day");
@@ -37,6 +39,10 @@ const event_hour_elem = document.getElementById("dialog_event_edit_hour");
 const event_minute_elem = document.getElementById("dialog_event_edit_minute");
 const event_imageCountDown_elem = document.getElementById("dialog_event_edit_imageCountDown");
 const event_imageEventDay_elem = document.getElementById("dialog_event_edit_imageEventDay");
+
+const event_edit_date_elem = document.getElementById("dialog_event_edit_date");
+const event_edit_time_elem = document.getElementById("dialog_event_edit_time");
+
 
 
 function addEvent() {
@@ -138,18 +144,103 @@ function isValidHexColor(colorstring) {
     return isValid;
 }
 
+function changeDate(e) {
+    if (e) {
+        const dateParts = event_edit_date_elem.value.split("-");
+
+        if (dateParts.length > 2) {
+            event_year_elem.value = dateParts[0];
+            event_month_elem.value = dateParts[1];
+            event_day_elem.value = dateParts[2];
+        }
+        if (event_month_elem.value.length == 1) {
+            event_month_elem.value = "0" + event_month_elem.value;
+        }
+        if (event_day_elem.value.length == 1) {
+            event_day_elem.value = "0" + event_day_elem.value;
+            console.log("Day 1 - Add Zero", event_day_elem.value);
+        }
+    }
+    else {
+        //console.log("Month - Before", event_month_elem.value);
+        //console.log("Day - Before", event_day_elem.value);
+        if (event_month_elem.value.length == 1) {
+            event_month_elem.value = "0" + event_month_elem.value;
+        }
+        if (event_day_elem.value.length == 1) {
+            event_day_elem.value = "0" + event_day_elem.value;
+            console.log("Day 2 - Add Zero", event_day_elem.value);
+        }
+        event_edit_date_elem.value = event_year_elem.value + "-" + event_month_elem.value + "-" + event_day_elem.value;
+
+        //console.log("event_edit_date_elem.value");
+        //console.dir(event_edit_date_elem.value);
+        //console.log("Year", event_year_elem.value);
+        //console.log("Month - After", event_month_elem.value);
+        console.log("Day - After", event_day_elem.value);
+    }
+}
+
+function changeTime(e) {
+    if (e) {
+        const timeParts = event_edit_time_elem.value.split(":");
+
+        if (timeParts.length > 1) {
+            event_hour_elem.value = timeParts[0];
+            event_minute_elem.value = timeParts[1];
+        }
+        if (event_hour_elem.value.length == 1) {
+            event_hour_elem.value = "0" + event_hour_elem.value;
+        }
+        if (event_minute_elem.value.length == 1) {
+            event_minute_elem.value = "0" + event_minute_elem.value;
+        }
+    }
+    else {
+        if (event_hour_elem.value.length == 1) {
+            event_hour_elem.value = "0" + event_hour_elem.value;
+        }
+        if (event_minute_elem.value.length == 1) {
+            event_minute_elem.value = "0" + event_minute_elem.value;
+        }
+        event_edit_time_elem.value = event_hour_elem.value + ":" + event_minute_elem.value;
+    }
+}
+
 function changeForecolor(elem) {
+    const backcolorSampleDivs = document.getElementsByClassName("backcolorSample");
+    const backcolor = event_backcolor_elem.value;
     const forecolorSampleDivs = document.getElementsByClassName("forecolorSample");
     const foreColor = event_forecolor_elem.value;
+    const forecolorSampleCountDivs = document.getElementsByClassName("forecolorSampleCount");
+    const foreColorCount = event_forecolor_count_elem.value;
 
+    let hexcodeBack = "1888A8"; // Default backcolor
     let hexcode = "F0C810"; // Default forecolor
+    let hexcodeCount = "FFFFFF"; // Default forecolor
+
+    if (isValidHexColor(backcolor)) {
+        hexcodeBack = backcolor.substring(2);
+    }
+    for (const item of backcolorSampleDivs) {
+        console.log("backcolorSampleDivs", "#" + hexcodeBack);
+        item.style.backgroundColor = "#" + hexcodeBack;
+    }
 
     if (isValidHexColor(foreColor)) {
         hexcode = foreColor.substring(2);
     }
-
     for (const item of forecolorSampleDivs) {
+        console.log("forecolorSampleDivs", "#" + hexcode);
         item.style.backgroundColor = "#" + hexcode;
+    }
+
+    if (isValidHexColor(foreColorCount)) {
+        hexcodeCount = foreColorCount.substring(2);
+    }
+    for (const item of forecolorSampleCountDivs) {
+        console.log("forecolorSampleCountDivs", "#" + hexcodeCount);
+        item.style.backgroundColor = "#" + hexcodeCount;
     }
 }
 
@@ -225,8 +316,9 @@ function dialogsShowEvent(id) {
     const msgBox = dialogsGetMessageBox(DIALOG_EVENT);
 
     if (!DIALOG_OVERLAY || !DIALOG_EVENT || !title || !event_id_elem || !event_title_elem || !event_subtitle_elem ||
-        !event_forecolor_elem || !event_year_elem || !event_month_elem || !event_day_elem || !event_hour_elem ||
-        !event_minute_elem || !event_imageCountDown_elem || !event_imageEventDay_elem || !msgBox) {
+        !event_backcolor_elem || !event_forecolor_elem || !event_forecolor_count_elem || !event_year_elem || 
+        !event_month_elem || !event_day_elem || !event_hour_elem || !event_minute_elem || !event_imageCountDown_elem || 
+        !event_imageEventDay_elem || !msgBox) {
         console.error("ERROR: dialogsShowEvent - Failed to get required document elements")
         return;
     }
@@ -237,7 +329,9 @@ function dialogsShowEvent(id) {
         event_id_elem.value = "-1";
         event_title_elem.value = "";
         event_subtitle_elem.value = "";
+        event_backcolor_elem.value = "0x1888A8"
         event_forecolor_elem.value = "0xF0C810";
+        event_forecolor_count_elem.value = "0xFFFFFF";
         event_year_elem.value = d.getFullYear();
         event_month_elem.value = d.getMonth() + 1;
         event_day_elem.value = d.getDate();
@@ -251,7 +345,9 @@ function dialogsShowEvent(id) {
         event_id_elem.value = id;
         event_title_elem.value = configData.events[id].title;
         event_subtitle_elem.value = configData.events[id].subtitle;
+        event_backcolor_elem.value = configData.events[id].backcolor;
         event_forecolor_elem.value = configData.events[id].forecolor;
+        event_forecolor_count_elem.value = configData.events[id].foreColorCount;
         event_year_elem.value = configData.events[id].year;
         event_month_elem.value = configData.events[id].month;
         event_day_elem.value = configData.events[id].day;
@@ -260,13 +356,33 @@ function dialogsShowEvent(id) {
         event_imageCountDown_elem.value = configData.events[id].imageCountDown;
         event_imageEventDay_elem.value = configData.events[id].imageEventDay;
     }
+    if (event_month_elem.value.length == 1) {
+        event_month_elem.value = "0" + event_month_elem.value;
+    }
+    if (event_day_elem.value.length == 1) {
+        console.log("Day 3 - Adding Zero -> ", event_day_elem.value);
+        event_day_elem.value = "0" + event_day_elem.value;
+        console.log("Day 3 - Added Zero -> ", event_day_elem.value);
+    }
+
+    // Update forecolor sample    
+    if (!event_backcolor_elem.value || event_backcolor_elem.value.length != 8) {
+        event_backcolor_elem.value = "0x1888A8";
+    }
+    if (event_forecolor_elem.value.length < 8) {
+        event_forecolor_elem.value = "0xF0C810";
+    }
+    if (!event_forecolor_count_elem.value || event_forecolor_count_elem.value.length != 8) {
+        event_forecolor_count_elem.value = "0xFFFFFF";
+    }
+    changeForecolor();
+    // Update Event Date and Time
+    changeDate(null);
+    changeTime(null);
 
     // Show dialog
     dialogShowEventMessage();
     DIALOG_EVENT.style.display = "block";
-
-    // Update forecolor sample
-    changeForecolor();
 
     // calculate the values for center alignment
     var dialogLeft = (viewPortWidth - Number(DIALOG_EVENT.offsetWidth)) / 2;
@@ -359,8 +475,16 @@ function event_save() {
         dialogShowEventMessage("Date and Time must a valid date!");
         return;
     }
+    else if (!isValidHexColor(event_backcolor_elem.value)) {
+        dialogShowEventMessage("Backcolor is not a valid color! Enter in the format of 0xRRGGBB, where RR GG BB are 00 through FF");
+        return;
+    }
     else if (!isValidHexColor(event_forecolor_elem.value)) {
         dialogShowEventMessage("Forecolor is not a valid color! Enter in the format of 0xRRGGBB, where RR GG BB are 00 through FF");
+        return;
+    }
+    else if (!isValidHexColor(event_forecolor_count_elem.value)) {
+        dialogShowEventMessage("Forecolor Count is not a valid color! Enter in the format of 0xRRGGBB, where RR GG BB are 00 through FF");
         return;
     }
 
@@ -381,7 +505,9 @@ function event_save() {
         configData.events.push({
             title: event_title_elem.value,
             subtitle: event_subtitle_elem.value,
+            backcolor: event_backcolor_elem.value,
             forecolor: event_forecolor_elem.value,
+            foreColorCount: event_forecolor_count_elem.value,
             year: event_year_elem.value,
             month: event_month_elem.value,
             day: event_day_elem.value,
@@ -398,7 +524,9 @@ function event_save() {
             ...configData.events[id],
             title: event_title_elem.value,
             subtitle: event_subtitle_elem.value,
+            backcolor: event_backcolor_elem.value,
             forecolor: event_forecolor_elem.value,
+            foreColorCount: event_forecolor_count_elem.value,
             year: event_year_elem.value,
             month: event_month_elem.value,
             day: event_day_elem.value,
@@ -512,7 +640,7 @@ function init() {
         tabs_container.getElementsByTagName("li")[0].click();
     }
 
-    // Add event listerns to the left tab and right tab buttons
+    // Add event listeners to the left tab and right tab buttons
     if (tabs_left_button) {
         tabs_left_button.addEventListener("click", function () {
             const step_size = tabs_scroll_step <= tabs_container.parentElement.offsetWidth ? tabs_scroll_step : tabs_container.parentElement.offsetWidth;
@@ -732,12 +860,12 @@ function uiUpdate() {
     if (aioKeyField) {
         aioKeyField.value = configData.secrets.aio_key;
     }
-    
-    if(configData.secrets.screen_width) {
-        if(configData.secrets.screen_width == 320 && configData.secrets.screen_height == 240) {
+
+    if (configData.secrets.screen_width) {
+        if (configData.secrets.screen_width == 320 && configData.secrets.screen_height == 240) {
             screenSize320x240.checked = true;
         }
-        else if(configData.secrets.screen_width == 480 && configData.secrets.screen_height == 320) {
+        else if (configData.secrets.screen_width == 480 && configData.secrets.screen_height == 320) {
             screenSize480x320.checked = true;
         }
         else {
@@ -886,10 +1014,18 @@ function uiUpdate() {
             subtitleSpan.id = "event_subtitle_" + i;
             subtitleSpan.textContent = configData.events[i].subtitle;
             subtitleSpan.classList.add("datacell");
+            const backcolorSpan = document.createElement("span", { id: "event_backcolor_" + i, textContent: configData.events[i].backcolor });
+            backcolorSpan.id = "event_backcolor_" + i;
+            backcolorSpan.textContent = configData.events[i].backcolor;
+            backcolorSpan.classList.add("datacell");
             const forecolorSpan = document.createElement("span", { id: "event_forecolor_" + i, textContent: configData.events[i].forecolor });
             forecolorSpan.id = "event_forecolor_" + i;
             forecolorSpan.textContent = configData.events[i].forecolor;
             forecolorSpan.classList.add("datacell");
+            const forecolorCountSpan = document.createElement("span", { id: "event_forecolor_count_" + i, textContent: configData.events[i].forecolorcount });
+            forecolorCountSpan.id = "event_forecolor_count_" + i;
+            forecolorCountSpan.textContent = configData.events[i].foreColorCount;
+            forecolorCountSpan.classList.add("datacell");
             const yearSpan = document.createElement("span", { id: "event_year_" + i, textContent: configData.events[i].year });
             yearSpan.id = "event_year_" + i;
             yearSpan.textContent = configData.events[i].year;
@@ -923,7 +1059,9 @@ function uiUpdate() {
             //rowDiv.appendChild(idSpan);
             rowDiv.appendChild(titleSpan);
             rowDiv.appendChild(subtitleSpan);
+            rowDiv.appendChild(backcolorSpan);
             rowDiv.appendChild(forecolorSpan);
+            rowDiv.appendChild(forecolorCountSpan);
             rowDiv.appendChild(yearSpan);
             rowDiv.appendChild(monthSpan);
             rowDiv.appendChild(daySpan);
@@ -977,7 +1115,7 @@ function updateData(e) {
     if (!e.id || e.id.length <= 0) {
         return;
     }
-    
+
     const screenSize = getScreenSizeValue();
     const screenSize320x240 = document.getElementById("320x240");
     const screenSize480x320 = document.getElementById("480x320");

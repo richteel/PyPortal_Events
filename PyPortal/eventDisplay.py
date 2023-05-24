@@ -9,7 +9,9 @@ updating various items on the display.
 
 import board
 import displayio
+import vectorio
 import adafruit_imageload
+import gc
 from adafruit_bitmap_font import bitmap_font
 from adafruit_display_shapes.rect import Rect
 from adafruit_display_text.label import Label
@@ -67,8 +69,13 @@ class eventDisplay:
             return False
 
     # **************** CLASS INITIALIZATION ******************
-    def __init__(self, imgFolder="", eventImagesFolder=""):
+    def __init__(self, imgFolder="", eventImagesFolder="", screen_width=320, screen_height=240):
         self.display = board.DISPLAY
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.statusBarHeight = 20
+        self.statusBackcolor = 0xffffff
+        self.textBackcolor = 0x1888a8
 
         # **************** FONTS ******************
         self.fontStatus = bitmap_font.load_font(
@@ -91,61 +98,68 @@ class eventDisplay:
         self.imageFolderPath = imgFolder
         self.eventImageFolderPath = eventImagesFolder
 
+        # ########### Create Screen Objects ###########
+        # ------------- 1. Temperature ------------- #
+        self.statusTemperature = Label(
+            font=self.fontStatus,
+            text="",
+            color=0x000000,
+            background_color=None,
+            anchor_point=(0.0, 0.5),
+        )
+        # ------------- 2. Date & Time ------------- #
+        self.statusDateTime = Label(
+            font=self.fontStatus,
+            text="No Time Info",
+            color=0x000000,
+            background_color=None,
+            anchor_point=(0.5, 0.5),
+        )
+        # ------------- 3. Wi-Fi Sprites ------------- #
         self.spritesWifi = None
-
-        self.gpWindow = displayio.Group()       # Group to hold all groups
-        self.gpBackground = displayio.Group()   # Group for the background image
-        self.gpHeader = displayio.Group()       # Group for the header
-        self.gpFooter = displayio.Group()       # Group for the footer
         # Group for the wifi signal stength sprite
         self.gpWifi = displayio.Group()
-        self.gpButtonDim = displayio.Group()    # Group for the backlight dim icon
-        # Group for the backlight increase icon
-        self.gpButtonBright = displayio.Group()
-
-        # Load the inital background
-        self.changeBackground(self.IMG_FILE_TITLE_BACKGROUND, False)
-
-        # Load the Header
-        self._loadHeader()
-
-        # Load the Footer
-        self._loadFooter()
-
-        # ------------- Title ------------- #
+        # Add the sprite to the Wi-Fi Group
+        self.gpWifi.append(self._loadWifiSprites())
+        # ------------- 4. Title ------------- #
         self.title = Label(
             font=self.fontLarge,
             text="",
             color=0xF0C810,
             background_color=None,
             anchor_point=(0.0, 0.0),
-            anchored_position=(8, 136),
         )
-
-        # ------------- Subtitle ------------- #
+        # ------------- 5. Subtitle ------------- #
         self.subtitle = Label(
             font=self.fontMedium,
             text="",
             color=0xF0C810,
             background_color=None,
             anchor_point=(0.0, 0.0),
-            anchored_position=(8, 170),
         )
-
-        countPosY = 192
-        countPosDaysX = 50
-        countPosHoursX = 150
-        countPosMinsX = 260
-        spaceX = 4
-
-        # ------------- Count Labels ------------- #
+        # ************* Count Labels ************* #
+        # ------------- 6 & 7. Count Days ------------- #
+        self.countDays = Label(
+            font=self.fontLarge,
+            text="",
+            color=0xFFFFFF,
+            background_color=None,
+            anchor_point=(1.0, 0.0),
+        )
         self.countlabelDays = Label(
             font=self.fontMedium,
             text="",
             color=0xF0C810,
             background_color=None,
             anchor_point=(0.0, 0.0),
-            anchored_position=(countPosDaysX + spaceX, countPosY),
+        )
+        # ------------- 8 & 9. Count Hours ------------- #
+        self.countHours = Label(
+            font=self.fontLarge,
+            text="",
+            color=0xFFFFFF,
+            background_color=None,
+            anchor_point=(1.0, 0.0),
         )
         self.countlabelHours = Label(
             font=self.fontMedium,
@@ -153,7 +167,14 @@ class eventDisplay:
             color=0xF0C810,
             background_color=None,
             anchor_point=(0.0, 0.0),
-            anchored_position=(countPosHoursX + spaceX, countPosY),
+        )
+        # ------------- 10 & 11. Count Minutes ------------- #
+        self.countMinutes = Label(
+            font=self.fontLarge,
+            text="",
+            color=0xFFFFFF,
+            background_color=None,
+            anchor_point=(1.0, 0.0),
         )
         self.countlabelMinutes = Label(
             font=self.fontMedium,
@@ -161,47 +182,103 @@ class eventDisplay:
             color=0xF0C810,
             background_color=None,
             anchor_point=(0.0, 0.0),
-            anchored_position=(countPosMinsX + spaceX, countPosY),
         )
-
-        # ------------- Counts ------------- #
-        self.countDays = Label(
-            font=self.fontLarge,
-            text="",
-            color=0xFFFFFF,
+        # ------------- 12. Dim Icon ------------- #
+        self.gpButtonDim = displayio.Group()    # Group for the backlight dim icon
+        # ------------- 13. Brightness Level ------------- #
+        self.statusBrightness = Label(
+            font=self.fontStatus,
+            text="Auto",
+            color=0x000000,
             background_color=None,
-            anchor_point=(1.0, 0.0),
-            anchored_position=(countPosDaysX, countPosY),
+            anchor_point=(0, 0.5),
+            anchored_position=(24, 230),
         )
-        self.countHours = Label(
-            font=self.fontLarge,
-            text="",
-            color=0xFFFFFF,
+        # ------------- 14. Event Count ------------- #
+        self.statusEventCount = Label(
+            font=self.fontStatus,
+            text="No Events",
+            color=0x000000,
             background_color=None,
-            anchor_point=(1.0, 0.0),
-            anchored_position=(countPosHoursX, countPosY),
+            anchor_point=(0.5, 0.5),
         )
-        self.countMinutes = Label(
-            font=self.fontLarge,
-            text="",
-            color=0xFFFFFF,
-            background_color=None,
-            anchor_point=(1.0, 0.0),
-            anchored_position=(countPosMinsX, countPosY),
-        )
+        # ------------- 15. Bright Icon ------------- #
+        self.gpButtonBright = displayio.Group()
+        # ------------- 16. Event Day Text ------------- #
         self.eventDayText = Label(
             font=self.fontLarge,
             text="",
             color=0xFFFFFF,
             background_color=None,
             anchor_point=(0.5, 0.0),
-            anchored_position=(160, countPosY),
         )
+        # ------------- 17. Text Background ------------- #
+        self.textBackcolorPallet = displayio.Palette(1)
+        self.textBackcolorPallet[0] = self.textBackcolor
+        self.textBackground = vectorio.Rectangle(pixel_shader=self.textBackcolorPallet, width=self.screen_width, height=1)
+
+        self.gpWindow = displayio.Group()       # Group to hold all groups
+        self.gpBackground = displayio.Group()   # Group for the background image
+        self.gpHeader = displayio.Group()       # Group for the header
+        self.gpFooter = displayio.Group()       # Group for the footer
+
+        # Load the inital background
+        self.changeBackground(self.IMG_FILE_TITLE_BACKGROUND, False)
+
+    def removeGroup(self, grp):
+        for i, e in reversed(list(enumerate(grp))):
+            grp.pop(i)
+        gc.collect()
+
+    def layoutScreen(self):
+        self.removeGroup(self.gpFooter)
+        self.removeGroup(self.gpHeader)
+        self.removeGroup(self.gpBackground)
+        self.removeGroup(self.gpWindow)
+
+        # for i, e in reversed(list(enumerate(self.display))):
+        # self.display.pop()
+
+        # Load the Header
+        self._loadHeader()
+
+        # Load the Footer
+        self._loadFooter()
+
+        # Position Labels
+        fontHeightMedium = 20
+        fontHeightLarge = 36
+        spaceY = 0
+        spaceX = 4
+        posCountY = self.screen_height - (self.statusBarHeight + spaceY + fontHeightLarge) # - 48
+        posSubTitleY = posCountY - spaceY - fontHeightMedium
+        posTitleY = posSubTitleY - spaceY - fontHeightLarge
+        countPosDaysX = 65
+        countPosHoursX = 160
+        countPosMinsX = 260
+        self.title.anchored_position=(8, posTitleY)
+        self.subtitle.anchored_position=(8, posSubTitleY)
+        self.eventDayText.anchored_position=(self.screen_width/2, posCountY)
+        self.countDays.anchored_position=(countPosDaysX, posCountY)
+        self.countlabelDays.anchored_position=(countPosDaysX + spaceX, posCountY)
+        self.countHours.anchored_position=(countPosHoursX, posCountY)
+        self.countlabelHours.anchored_position=(countPosHoursX + spaceX, posCountY)
+        self.countMinutes.anchored_position=(countPosMinsX, posCountY)
+        self.countlabelMinutes.anchored_position=(countPosMinsX + spaceX, posCountY)
+        
+        # Size and position text background
+        self.textBackground.width = self.screen_width
+        self.textBackground.height = (self.screen_height - posTitleY - spaceY - self.statusBarHeight) + 4
+        self.textBackground.x = 0
+        self.textBackground.y = (posTitleY - spaceY) - 4
+        self.textBackground.hidden = True
+        
 
         # ------------- GROUP - gpWindow ------------- #
         self.gpWindow.append(self.gpBackground)
         self.gpWindow.append(self.gpHeader)
         self.gpWindow.append(self.gpFooter)
+        self.gpWindow.append(self.textBackground)
         self.gpWindow.append(self.title)
         self.gpWindow.append(self.subtitle)
         self.gpWindow.append(self.countlabelDays)
@@ -212,16 +289,22 @@ class eventDisplay:
         self.gpWindow.append(self.countMinutes)
         self.gpWindow.append(self.eventDayText)
         # Add the Group to the Display
-        self.display.show(self.gpWindow)
+        self.display.root_group = self.gpWindow
 
         # ------------- TOUCH AREAS ------------- #
-        self.touchTemperature = Rect(0, 0, 40, 40)
-        self.touchTime = Rect(60, 0, 200, 40)
-        self.touchEventPrevious = Rect(0, 60, 150, 120)
-        self.touchEventNext = Rect(170, 60, 150, 120)
-        self.touchBrightnessMinus = Rect(0, 200, 40, 40)
-        self.touchBrightnessAuto = Rect(80, 200, 160, 40)
-        self.touchBrightnessPlus = Rect(280, 200, 40, 40)
+        statusSqButtonWH = 40
+        statusTouchSpace = 20
+        statusSqButtonAndSpace = statusSqButtonWH + statusTouchSpace
+        self.touchTemperature = Rect(0, 0, statusSqButtonWH, statusSqButtonWH)
+        self.touchTime = Rect(statusSqButtonAndSpace, 0, self.screen_width - (2 * statusSqButtonAndSpace), statusSqButtonWH)
+        self.touchEventPrevious = Rect(0, statusSqButtonAndSpace, (2 * statusSqButtonAndSpace), self.screen_height - (2 * statusSqButtonAndSpace))
+        self.touchEventNext = Rect(self.screen_width- (2 * statusSqButtonAndSpace), statusSqButtonAndSpace, (2 * statusSqButtonAndSpace), self.screen_height - (2 * statusSqButtonAndSpace))
+        self.touchBrightnessMinus = Rect(0, self.screen_height - statusSqButtonWH, statusSqButtonWH, statusSqButtonWH)
+        self.touchBrightnessAuto = Rect(statusSqButtonAndSpace, self.screen_height - statusSqButtonWH, self.screen_width - (2 * statusSqButtonAndSpace), statusSqButtonWH)
+        self.touchBrightnessPlus = Rect(self.screen_width - statusSqButtonWH, self.screen_height - statusSqButtonWH, statusSqButtonWH, statusSqButtonWH)
+
+        gc.collect()
+
 
     # **************** INTERNAL METHODS ******************
     def _loadWifiSprites(self):
@@ -236,39 +319,29 @@ class eventDisplay:
                                               height=1,
                                               tile_width=20,
                                               tile_height=20)
-        # Set sprite location
-        self.gpWifi.x = 300
-        self.gpWifi.y = 0
 
         return self.spritesWifi
 
     def _loadHeader(self):
-        # ------------- GROUP - gpHeader ------------- #
-        rectHead = Rect(0, 0, 320, 20, fill=0xffffff)
+        # ------------- Header Background Rectangle ------------- #
+        rectHead = Rect(0, 0, self.screen_width,
+                        self.statusBarHeight, fill=self.statusBackcolor)
+
+        # ------------- LABEL - statusBrightness ------------- #
+        self.statusTemperature.anchored_position = (2, self.statusBarHeight/2)
+
+        # ------------- LABEL - statusDateTime ------------- #
+        self.statusDateTime.anchored_position = (180, self.statusBarHeight/2)
+        if self.screen_width > 320:
+            self.statusDateTime.anchored_position = (
+                self.screen_width/2, self.statusBarHeight/2)
+
+        # ------------- GROUP - gpWifi ------------- #
+        self.gpWifi.x = self.screen_width - self.statusBarHeight
+        self.gpWifi.y = 0
+
+        # ------------- Append items to the gpHeader ------------- #
         self.gpHeader.append(rectHead)
-
-        self.statusTemperature = Label(
-            font=self.fontStatus,
-            text="",
-            color=0x000000,
-            background_color=None,
-            anchor_point=(0.0, 0.0),
-            anchored_position=(2, 3),
-        )
-
-        self.statusDateTime = Label(
-            font=self.fontStatus,
-            text="No Time Info",
-            color=0x000000,
-            background_color=None,
-            anchor_point=(0.5, 0.0),
-            # anchored_position=(160, 3),
-            anchored_position=(180, 3),
-        )
-
-        # Add the sprite to the Wi-Fi Group
-        self.gpWifi.append(self._loadWifiSprites())
-
         self.gpHeader.append(self.statusTemperature)
         self.gpHeader.append(self.statusDateTime)
         self.gpHeader.append(self.gpWifi)
@@ -276,57 +349,51 @@ class eventDisplay:
         return
 
     def _loadFooter(self):
-        # ------------- GROUP - gpFooter ------------- #
-        rectFoot = Rect(0, 220, 320, 20, fill=0xffffff)
-        self.gpFooter.append(rectFoot)
+        footerY = self.screen_height-self.statusBarHeight
 
-        # ------------- GROUP - gpbacklightMinus ------------- #
+        # ------------- Header Background Rectangle ------------- #
+        rectFoot = Rect(0, footerY,
+                        self.screen_width, self.statusBarHeight, fill=self.statusBackcolor)
+
+        # ------------- GROUP - gpButtonDim ------------- #
         self._set_image(self.gpButtonDim, self.imageFolderPath +
-                        "/" + self.IMG_FILE_DIM_ICON)
+                        "/" + self.IMG_FILE_DIM_ICON, centerImage=False)
         self.gpButtonDim.x = 0
-        self.gpButtonDim.y = 220
+        self.gpButtonDim.y = footerY
 
-        # ------------- GROUP - gpbacklightPlus ------------- #
+        # ------------- LABEL - statusBrightness ------------- #
+        self.statusBrightness.anchored_position = (
+            self.statusBarHeight + 4, footerY + self.statusBarHeight/2)
+
+        # ------------- LABEL - statusEventCount ------------- #
+        self.statusEventCount.anchored_position = (
+            self.screen_width/2, footerY + self.statusBarHeight/2)
+
+        # ------------- GROUP - gpButtonBright ------------- #
         self._set_image(self.gpButtonBright,
-                        self.imageFolderPath + "/" + self.IMG_FILE_BRIGHT_ICON)
-        self.gpButtonBright.x = 300
-        self.gpButtonBright.y = 220
+                        self.imageFolderPath + "/" + self.IMG_FILE_BRIGHT_ICON, centerImage=False)
+        self.gpButtonBright.x = self.screen_width - self.statusBarHeight
+        self.gpButtonBright.y = footerY
 
-        # ------------- Event Count Label ------------- #
-        self.statusEventCount = Label(
-            font=self.fontStatus,
-            text="No Events",
-            color=0x000000,
-            background_color=None,
-            anchor_point=(0.5, 0.5),
-            anchored_position=(160, 230),
-        )
-
-        # ------------- Brightness Label ------------- #
-        self.statusBrightness = Label(
-            font=self.fontStatus,
-            text="Auto",
-            color=0x000000,
-            background_color=None,
-            anchor_point=(0, 0.5),
-            anchored_position=(24, 230),
-        )
-
+        # ------------- Append items to the gpFooter ------------- #
+        self.gpFooter.append(rectFoot)
         self.gpFooter.append(self.gpButtonDim)
-        self.gpFooter.append(self.gpButtonBright)
-        self.gpFooter.append(self.statusEventCount)
         self.gpFooter.append(self.statusBrightness)
+        self.gpFooter.append(self.statusEventCount)
+        self.gpFooter.append(self.gpButtonBright)
 
     # This will handle switching Images and Icons
-    def _set_image(self, group, filename):
+    def _set_image(self, group, filename, x=0, y=0, centerImage=True, backcolor=None):
         """Set the image file for a given goup for display.
         This is most useful for Icons or image slideshows.
             :param group: The chosen group
             :param filename: The filename of the chosen image
         """
-        # print("Set image to ", filename)
+        # Remove all items from the group
         if group:
-            group.pop()
+            for i, e in reversed(list(enumerate(group))):
+                group.pop(i)
+            gc.collect()
 
         if not filename:
             return  # we're done, no icon desired
@@ -342,6 +409,27 @@ class eventDisplay:
         image = displayio.OnDiskBitmap(filename)
         image_sprite = displayio.TileGrid(
             image, pixel_shader=image.pixel_shader)
+
+        imgX = x
+        imgY = y
+
+        if centerImage:
+            imgX = int((self.screen_width - image.width)/2)
+            imgY = int((self.screen_height - image.height)/2)
+
+            if not(backcolor is None) and (imgX > 0 or imgY > 0):
+                pallet01 = displayio.Palette(1)
+                pallet01[0] = backcolor
+                rect = vectorio.Rectangle(
+                    pixel_shader=pallet01, 
+                    width=self.screen_width, 
+                    height=self.screen_height, 
+                    x=0, 
+                    y=0)
+                group.append(rect)
+        
+        image_sprite.x = imgX
+        image_sprite.y = imgY
 
         group.append(image_sprite)
 
@@ -365,9 +453,6 @@ class eventDisplay:
             self._set_image(self.gpBackground,
                             self.imageFolderPath + "/" + self.IMG_FILE_NOT_FOUND)
 
-        self.gpBackground.x = 0
-        self.gpBackground.y = 0
-
         return
 
     def clearAllText(self):
@@ -380,3 +465,5 @@ class eventDisplay:
         self.countMinutes.text = ""
         self.countlabelMinutes.text = ""
         self.eventDayText.text = ""
+
+        gc.collect()
